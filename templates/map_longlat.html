@@ -1,0 +1,68 @@
+<html>
+  <head>
+        <title>Search Movie Locations</title>
+        <link href="https://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" rel="Stylesheet"></link>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js" ></script>
+  </head>
+
+<style>
+.input-group {
+     margin-left: 40%;
+}
+</style>
+
+<body>
+    <div class="input-group">
+        <input style="width:200px;height:30px" id="movie_id" type="text" name="movie_name" value="" placeholder="Enter Movie Name">&nbsp;&nbsp;
+        <button id="submit_btn" class="btn-primary" style="width:150px;height:30px">SUBMIT</button>
+    </div>
+    <br>
+    <div id="map_div" style="width: 1240px; height: 600px"></div>
+
+
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+        google.load('visualization', '1', { 'packages': ['map'] });
+        google.setOnLoadCallback(drawChart);
+
+        $("#movie_id").autocomplete({
+           source: '/ac_movies/',
+        });
+
+        $("#submit_btn").click(function(){
+            var movie_id = {"movie_id": $("#movie_id").val()};
+            drawChart(movie_id);
+        });
+
+        function drawChart(movie_id) {
+            $.ajax({
+                url: "/get_movie_locations/",
+                type: "GET",
+                datatype: "json",
+                data: movie_id,
+                success: function(response)
+                {
+                    var data = google.visualization.arrayToDataTable(response);
+                    var map = new google.visualization.Map(document.getElementById('map_div'));
+                    var options = {
+                        mapType: 'normal',
+                        enableScrollWheel: true,
+                        showTip: true,
+                        useMapTypeControl: true
+                    };
+                    map.draw(data, options);
+                },
+                error : function(response)
+                {
+                    document.getElementById("map_div").style.textAlign = "center";
+                    document.getElementById('map_div').innerHTML = "<ul><p><b>Sorry Couldn't find locations<b></p></ul>";
+                    console.log(response);
+                },
+            });
+        };
+
+    </script>
+</body>
+</html>
+
